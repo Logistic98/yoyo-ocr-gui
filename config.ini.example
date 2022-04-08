@@ -1,0 +1,8 @@
+[PaddleOCR]
+url = http://ip:port/paddle/paddleOcr
+
+[GoogleTranslate]
+url = http://ip:port/googleTranslate/getTranslateResult
+
+[ImageTempDir]
+tmpDir = ./tmp

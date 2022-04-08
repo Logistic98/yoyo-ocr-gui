@@ -1,0 +1,11 @@
+/__pycache__
+/.idea
+/tmp
+/config.ini
+/*.log
+/*.build
+/*.dist
+/*.spec
+/build
+/dist
+/batch-script

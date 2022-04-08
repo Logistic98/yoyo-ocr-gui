@@ -1,0 +1,4 @@
+QDarkStyle==3.0.3
+requests==2.27.1
+pyside6==6.2.4
+Pillow==9.1.0
