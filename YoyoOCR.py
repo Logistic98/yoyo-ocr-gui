@@ -13,6 +13,7 @@ import requests
 from PySide6.QtCore import QThread, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication, QWidget
+from playsound import playsound
 
 import gol
 from Ui_YoyoOCR import Ui_YoyoOCR
@@ -29,10 +30,12 @@ def read_config():
     cfg.read('./config.ini', encoding='utf-8')
     paddleocr_url = cfg.get('PaddleOCR', 'url')
     google_translate_url = cfg.get('GoogleTranslate', 'url')
+    gtts_url = cfg.get('gTTS', 'url')
     image_temp_dir = cfg.get('ImageTempDir', 'tmpDir')
     config_dict = {}
     config_dict['paddleocr_url'] = paddleocr_url
     config_dict['google_translate_url'] = google_translate_url
+    config_dict['gtts_url'] = gtts_url
     config_dict['image_temp_dir'] = image_temp_dir
     return config_dict
 
@@ -77,6 +80,20 @@ def paddle_ocr(url, imgPath):
         return error_text
 
 
+# 请求gTTS文本合成语音接口
+def gtts(url, text, lang):
+    # 传输的数据格式
+    data = {'text': text, 'lang': lang}
+    # post传递数据
+    r = requests.post(url, data=json.dumps(data))
+    # 写入文件
+    file_path = './tmp/{}.mp3'.format(uuid.uuid1())
+    with open(file_path, 'ab') as file:
+        file.write(r.content)
+        file.flush()
+    return file_path
+
+
 # OCR识别的多线程执行
 class WorkThreadOcr(QThread):
 
@@ -94,6 +111,7 @@ class WorkThreadOcr(QThread):
         result = paddle_ocr(config_dict['paddleocr_url'], imgPath)
         # 通过自定义信号把待显示的字符串传递给槽函数
         self.ocrSignal.emit(result)
+        gol.set_value('isRuning', False)
 
 
 # 文本翻译的多线程执行
@@ -114,6 +132,40 @@ class WorkThreadTranslate(QThread):
         result = google_translate_crack(config_dict['google_translate_url'], inputText, languageCode)
         # 通过自定义信号把待显示的字符串传递给槽函数
         self.translateSignal.emit(result)
+        gol.set_value('isRuning', False)
+
+
+# 文本合成语音的多线程执行
+class WorkThreadVoice(QThread):
+
+    # 自定义信号对象。参数str就代表这个信号可以传一个字符串
+    voiceSignal = Signal(str)
+
+    # 初始化函数
+    def __int__(self):
+        super(WorkThreadVoice, self).__init__()
+
+    # 重写线程执行的run函数，触发自定义信号
+    def run(self):
+        selectedText = gol.get_value('selectedText')
+        languageCode = gol.get_value('languageCode')
+        # 对languageCode进行处理
+        if languageCode == "zh-cn" or "zh-tw":
+            languageCode = "zh-CN"
+        # 请求gTTS接口
+        file_path = gtts(config_dict['gtts_url'], selectedText, languageCode)
+        if os.path.exists(file_path):
+            # 播放语音
+            try:
+                # playsound调用时可能出现“指定的设备未打开，或不被 MCI 所识别”报错，需要修改源码
+                playsound(file_path)
+            except Exception as e:
+                logger.error(e)
+            # 删除临时语音文件
+            os.remove(file_path)
+        # 通过自定义信号把待显示的字符串传递给槽函数
+        self.voiceSignal.emit("开始")
+        gol.set_value('isRuning', False)
 
 
 class MainWindow(QWidget):
@@ -163,35 +215,65 @@ class MainWindow(QWidget):
 
     def queryContent(self):
 
-        ocrRadio = self.ui.ocrRadioButton.isChecked()
-        translateRadio = self.ui.translateRadioButton.isChecked()
+        # 判断是否处在处理中状态
+        isRuning = gol.get_value('isRuning')
+        if not isRuning:
 
-        if ocrRadio:
-            self.ui.input.clear()
-            self.ui.output.clear()
-            imgPath = str(config_dict['image_temp_dir']) + '/' + str(uuid.uuid1()) + '.jpg'
-            screenshot(imgPath)
-            if os.path.exists(imgPath):
-                gol.set_value('imgPath', imgPath)
-                # 多线程处理OCR识别接口请求
-                self.ocr_work = WorkThreadOcr()    # 实例化线程对象
-                self.ocr_work.start()  # 启动线程
-                self.ocr_work.ocrSignal.connect(self.buttonStatusDisplay('处理中'))
-                self.ocr_work.ocrSignal.connect(self.ocrDisplay)   # 线程自定义信号连接的槽函数
+            gol.set_value('isRuning', True)
+            ocrRadio = self.ui.ocrRadioButton.isChecked()
+            translateRadio = self.ui.translateRadioButton.isChecked()
+            voiceRadio = self.ui.voiceRadioButton.isChecked()
 
-        if translateRadio:
-            self.ui.output.clear()
-            languageName = self.ui.languageComboBox.currentText()
-            languageCode = self.getCode(languageName)
-            inputText = self.ui.input.toPlainText()
-            gol.set_value('languageCode', languageCode)
-            gol.set_value('inputText', inputText)
-            if inputText != "":
-                # 多线程处理Google翻译接口请求
-                self.translate_work = WorkThreadTranslate()  # 实例化线程对象
-                self.translate_work.start()  # 启动线程
-                self.translate_work.translateSignal.connect(self.buttonStatusDisplay('处理中'))
-                self.translate_work.translateSignal.connect(self.translateDisplay)  # 线程自定义信号连接的槽函数
+            if ocrRadio:
+                self.ui.input.clear()
+                self.ui.output.clear()
+                imgPath = str(config_dict['image_temp_dir']) + '/' + str(uuid.uuid1()) + '.jpg'
+                screenshot(imgPath)
+                if os.path.exists(imgPath):
+                    gol.set_value('imgPath', imgPath)
+                    # 多线程处理OCR识别接口请求
+                    self.ocr_work = WorkThreadOcr()    # 实例化线程对象
+                    self.ocr_work.start()  # 启动线程
+                    self.ocr_work.ocrSignal.connect(self.buttonStatusDisplay('处理中'))
+                    self.ocr_work.ocrSignal.connect(self.ocrDisplay)   # 线程自定义信号连接的槽函数
+                else:
+                    gol.set_value('isRuning', False)
+
+            if translateRadio:
+                self.ui.output.clear()
+                languageName = self.ui.languageComboBox.currentText()
+                languageCode = self.getCode(languageName)
+                inputText = self.ui.input.toPlainText()
+                if inputText != "":
+                    gol.set_value('languageCode', languageCode)
+                    gol.set_value('inputText', inputText)
+                    # 多线程处理Google翻译接口请求
+                    self.translate_work = WorkThreadTranslate()  # 实例化线程对象
+                    self.translate_work.start()  # 启动线程
+                    self.translate_work.translateSignal.connect(self.buttonStatusDisplay('处理中'))
+                    self.translate_work.translateSignal.connect(self.translateDisplay)  # 线程自定义信号连接的槽函数
+                else:
+                    gol.set_value('isRuning', False)
+
+            if voiceRadio:
+                languageName = self.ui.languageComboBox.currentText()
+                languageCode = self.getCode(languageName)
+                # 按照输出选中、输入选中、输出区域的优先级顺序获取文本
+                selectedText = self.ui.output.textCursor().selectedText()
+                if selectedText == "":
+                    selectedText = self.ui.input.textCursor().selectedText()
+                if selectedText == "":
+                    selectedText = self.ui.output.toPlainText()
+                if selectedText != "":
+                    gol.set_value('languageCode', languageCode)
+                    gol.set_value('selectedText', selectedText)
+                    # 多线程处理文本合成语音接口请求
+                    self.voice_work = WorkThreadVoice()  # 实例化线程对象
+                    self.voice_work.start()  # 启动线程
+                    self.voice_work.voiceSignal.connect(self.buttonStatusDisplay('处理中'))
+                    self.voice_work.voiceSignal.connect(self.buttonStatusDisplay)
+                else:
+                    gol.set_value('isRuning', False)
 
 
 if __name__ == '__main__':
@@ -201,6 +283,7 @@ if __name__ == '__main__':
         os.makedirs(config_dict['image_temp_dir'])
     # 全局变量初始化
     gol._init()
+    gol.set_value('isRuning', False)
     # 初始化界面
     app = QApplication(sys.argv)
     window = MainWindow()
