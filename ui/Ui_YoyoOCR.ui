@@ -55,10 +55,10 @@
      <item>
       <layout class="QHBoxLayout" name="functionTab">
        <property name="leftMargin">
-        <number>50</number>
+        <number>30</number>
        </property>
        <property name="rightMargin">
-        <number>50</number>
+        <number>30</number>
        </property>
        <item>
         <widget class="QLabel" name="functionLabel">
@@ -78,6 +78,13 @@
         <widget class="QRadioButton" name="translateRadioButton">
          <property name="text">
           <string>文本翻译</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="voiceRadioButton">
+         <property name="text">
+          <string>语音朗读</string>
          </property>
         </widget>
        </item>

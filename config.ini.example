@@ -4,5 +4,8 @@ url = http://ip:port/paddle/paddleOcr
 [GoogleTranslate]
 url = http://ip:port/googleTranslate/getTranslateResult
 
+[gTTS]
+url = http://ip:port/gtts/textToVoice
+
 [ImageTempDir]
 tmpDir = ./tmp
