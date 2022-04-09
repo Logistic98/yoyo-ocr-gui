@@ -21,5 +21,5 @@ yoyo-ocr-gui
 
 功能界面：
 
-![YoyoOCR美化后的样式](https://chevereto.eula.club/images/2022/04/05/1b64efc5ed74.png)
+![YoyoOCR工具效果展示](README.assets/YoyoOCR工具效果展示.png)
 
