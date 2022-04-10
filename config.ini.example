@@ -1,11 +1,15 @@
+[FastTextRank]
+keyword_url = http://ip:port/fastTextRank/getKeyWord
+sentence_url = http://ip:port/fastTextRank/getSentence
+
 [PaddleOCR]
-url = http://ip:port/paddle/paddleOcr
+paddleocr_url = http://ip:port/paddle/paddleOcr
 
 [GoogleTranslate]
-url = http://ip:port/googleTranslate/getTranslateResult
+google_translate_url = http://ip:port/googleTranslate/getTranslateResult
 
 [gTTS]
-url = http://ip:port/gtts/textToVoice
+gtts_url = http://ip:port/gtts/textToVoice
 
 [ImageTempDir]
 tmpDir = ./tmp
