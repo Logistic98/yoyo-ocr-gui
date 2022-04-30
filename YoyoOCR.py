@@ -126,7 +126,7 @@ class WorkThreadOcr(QThread):
         try:
             res = paddle_ocr(config_dict['paddleocr_url'], imgPath)
             if json.loads(res.text)['code'] == 200:
-                content_list = json.loads(res.text)['result']
+                content_list = json.loads(res.text)['data']
                 result = "\n".join(str(i) for i in content_list)
                 self.ocrSignal.emit(result)
             else:
@@ -162,7 +162,7 @@ class WorkThreadTranslate(QThread):
         try:
             res = google_translate_crack(config_dict['google_translate_url'], inputText, languageCode)
             if json.loads(res.text)['code'] == 200:
-                result = json.loads(res.text)['data']['result']
+                result = json.loads(res.text)['data']
                 self.translateSignal.emit(result)
             else:
                 error_text = "请求Google翻译接口失败！"
@@ -239,7 +239,7 @@ class WorkThreadKeyword(QThread):
         try:
             res = get_keyword(config_dict['keyword_url'], inputText, "array")
             if json.loads(res.text)['code'] == 200:
-                result_array = json.loads(res.text)['data']['keyword']
+                result_array = json.loads(res.text)['data']
                 result = ""
                 for item in result_array:
                     result = result + item[0] + ": " +str(item[1]) + "\n"
@@ -276,7 +276,7 @@ class WorkThreadSentence(QThread):
         try:
             res = get_sentence(config_dict['sentence_url'], inputText)
             if json.loads(res.text)['code'] == 200:
-                result_array = json.loads(res.text)['data']['sentence']
+                result_array = json.loads(res.text)['data']
                 result = ""
                 for item in result_array:
                     result = result + item + "\n"
