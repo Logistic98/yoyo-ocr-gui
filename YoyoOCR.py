@@ -361,7 +361,7 @@ class MainWindow(QWidget):
                     gol.set_value('imgPath', imgPath)
                     # 多线程处理OCR识别接口请求
                     self.ocr_work = WorkThreadOcr()  # 实例化线程对象
-                    self.ocr_work.start()  # 启动线程
+                    self.ocr_work.start(parent=self)  # 启动线程
                     self.ocr_work.ocrSignal.connect(self.buttonStatusDisplay('处理中'))
                     self.ocr_work.ocrSignal.connect(self.inputResultDisplay)
                     self.ocr_work.ocrButtonSignal.connect(self.buttonStatusDisplay)
@@ -378,7 +378,7 @@ class MainWindow(QWidget):
                     gol.set_value('languageCode', languageCode)
                     gol.set_value('inputText', inputText)
                     # 多线程处理Google翻译接口请求
-                    self.translate_work = WorkThreadTranslate()  # 实例化线程对象
+                    self.translate_work = WorkThreadTranslate(parent=self)  # 实例化线程对象
                     self.translate_work.start()  # 启动线程
                     self.translate_work.translateSignal.connect(self.buttonStatusDisplay('处理中'))
                     self.translate_work.translateSignal.connect(self.outputResultDisplay)
@@ -400,7 +400,7 @@ class MainWindow(QWidget):
                     gol.set_value('languageCode', languageCode)
                     gol.set_value('selectedText', selectedText)
                     # 多线程处理文本合成语音接口请求
-                    self.voice_work = WorkThreadVoice()  # 实例化线程对象
+                    self.voice_work = WorkThreadVoice(parent=self)  # 实例化线程对象
                     self.voice_work.start()  # 启动线程
                     self.voice_work.voiceButtonSignal.connect(self.buttonStatusDisplay('处理中'))
                     self.voice_work.voiceButtonSignal.connect(self.buttonStatusDisplay)
@@ -414,7 +414,7 @@ class MainWindow(QWidget):
                 if inputText != "":
                     gol.set_value('inputText', inputText)
                     # 多线程处理关键词提取接口请求
-                    self.keyword_work = WorkThreadKeyword()  # 实例化线程对象
+                    self.keyword_work = WorkThreadKeyword(parent=self)  # 实例化线程对象
                     self.keyword_work.start()  # 启动线程
                     self.keyword_work.keywordSignal.connect(self.buttonStatusDisplay('处理中'))
                     self.keyword_work.keywordSignal.connect(self.outputResultDisplay)
@@ -429,7 +429,7 @@ class MainWindow(QWidget):
                 if inputText != "":
                     gol.set_value('inputText', inputText)
                     # 多线程处理句子概要提取接口请求
-                    self.sentence_work = WorkThreadSentence()  # 实例化线程对象
+                    self.sentence_work = WorkThreadSentence(parent=self)  # 实例化线程对象
                     self.sentence_work.start()  # 启动线程
                     self.sentence_work.sentenceSignal.connect(self.buttonStatusDisplay('处理中'))
                     self.sentence_work.sentenceSignal.connect(self.outputResultDisplay)
