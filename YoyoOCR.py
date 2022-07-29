@@ -360,8 +360,8 @@ class MainWindow(QWidget):
                 if os.path.exists(imgPath):
                     gol.set_value('imgPath', imgPath)
                     # 多线程处理OCR识别接口请求
-                    self.ocr_work = WorkThreadOcr()  # 实例化线程对象
-                    self.ocr_work.start(parent=self)  # 启动线程
+                    self.ocr_work = WorkThreadOcr(parent=self)  # 实例化线程对象
+                    self.ocr_work.start()  # 启动线程
                     self.ocr_work.ocrSignal.connect(self.buttonStatusDisplay('处理中'))
                     self.ocr_work.ocrSignal.connect(self.inputResultDisplay)
                     self.ocr_work.ocrButtonSignal.connect(self.buttonStatusDisplay)
