@@ -126,7 +126,7 @@ class WorkThreadOcr(QThread):
         try:
             res = paddle_ocr(config_dict['paddleocr_url'], imgPath)
             if json.loads(res.text)['code'] == 200:
-                content_list = json.loads(res.text)['result']
+                content_list = json.loads(res.text)['data']
                 result = "\n".join(str(i) for i in content_list)
                 self.ocrSignal.emit(result)
             else:
@@ -162,7 +162,7 @@ class WorkThreadTranslate(QThread):
         try:
             res = google_translate_crack(config_dict['google_translate_url'], inputText, languageCode)
             if json.loads(res.text)['code'] == 200:
-                result = json.loads(res.text)['data']['result']
+                result = json.loads(res.text)['data']
                 self.translateSignal.emit(result)
             else:
                 error_text = "请求Google翻译接口失败！"
@@ -239,7 +239,7 @@ class WorkThreadKeyword(QThread):
         try:
             res = get_keyword(config_dict['keyword_url'], inputText, "array")
             if json.loads(res.text)['code'] == 200:
-                result_array = json.loads(res.text)['data']['keyword']
+                result_array = json.loads(res.text)['data']
                 result = ""
                 for item in result_array:
                     result = result + item[0] + ": " +str(item[1]) + "\n"
@@ -276,7 +276,7 @@ class WorkThreadSentence(QThread):
         try:
             res = get_sentence(config_dict['sentence_url'], inputText)
             if json.loads(res.text)['code'] == 200:
-                result_array = json.loads(res.text)['data']['sentence']
+                result_array = json.loads(res.text)['data']
                 result = ""
                 for item in result_array:
                     result = result + item + "\n"
@@ -360,7 +360,7 @@ class MainWindow(QWidget):
                 if os.path.exists(imgPath):
                     gol.set_value('imgPath', imgPath)
                     # 多线程处理OCR识别接口请求
-                    self.ocr_work = WorkThreadOcr()  # 实例化线程对象
+                    self.ocr_work = WorkThreadOcr(parent=self)  # 实例化线程对象
                     self.ocr_work.start()  # 启动线程
                     self.ocr_work.ocrSignal.connect(self.buttonStatusDisplay('处理中'))
                     self.ocr_work.ocrSignal.connect(self.inputResultDisplay)
@@ -378,7 +378,7 @@ class MainWindow(QWidget):
                     gol.set_value('languageCode', languageCode)
                     gol.set_value('inputText', inputText)
                     # 多线程处理Google翻译接口请求
-                    self.translate_work = WorkThreadTranslate()  # 实例化线程对象
+                    self.translate_work = WorkThreadTranslate(parent=self)  # 实例化线程对象
                     self.translate_work.start()  # 启动线程
                     self.translate_work.translateSignal.connect(self.buttonStatusDisplay('处理中'))
                     self.translate_work.translateSignal.connect(self.outputResultDisplay)
@@ -400,7 +400,7 @@ class MainWindow(QWidget):
                     gol.set_value('languageCode', languageCode)
                     gol.set_value('selectedText', selectedText)
                     # 多线程处理文本合成语音接口请求
-                    self.voice_work = WorkThreadVoice()  # 实例化线程对象
+                    self.voice_work = WorkThreadVoice(parent=self)  # 实例化线程对象
                     self.voice_work.start()  # 启动线程
                     self.voice_work.voiceButtonSignal.connect(self.buttonStatusDisplay('处理中'))
                     self.voice_work.voiceButtonSignal.connect(self.buttonStatusDisplay)
@@ -414,7 +414,7 @@ class MainWindow(QWidget):
                 if inputText != "":
                     gol.set_value('inputText', inputText)
                     # 多线程处理关键词提取接口请求
-                    self.keyword_work = WorkThreadKeyword()  # 实例化线程对象
+                    self.keyword_work = WorkThreadKeyword(parent=self)  # 实例化线程对象
                     self.keyword_work.start()  # 启动线程
                     self.keyword_work.keywordSignal.connect(self.buttonStatusDisplay('处理中'))
                     self.keyword_work.keywordSignal.connect(self.outputResultDisplay)
@@ -429,7 +429,7 @@ class MainWindow(QWidget):
                 if inputText != "":
                     gol.set_value('inputText', inputText)
                     # 多线程处理句子概要提取接口请求
-                    self.sentence_work = WorkThreadSentence()  # 实例化线程对象
+                    self.sentence_work = WorkThreadSentence(parent=self)  # 实例化线程对象
                     self.sentence_work.start()  # 启动线程
                     self.sentence_work.sentenceSignal.connect(self.buttonStatusDisplay('处理中'))
                     self.sentence_work.sentenceSignal.connect(self.outputResultDisplay)
