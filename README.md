@@ -1,6 +1,6 @@
 ## yoyo-ocr-gui
 
-内容说明：见我的博客 [使用PySide6图形界面框架制作GUI](https://www.eula.club/使用PySide6图形界面框架制作GUI.html)
+内容说明：见我的博客 [使用PySide6图形界面框架制作GUI](https://www.eula.club/blogs/使用PySide6图形界面框架制作GUI.html)
 
 算法来源：见我的另一个开源项目 [yoyo-algorithm](https://github.com/Logistic98/yoyo-algorithm)
 
