@@ -26,22 +26,15 @@ logger = logging.getLogger(__name__)
 
 
 # 读取配置文件
-def read_config():
+def read_config(config_path):
     cfg = ConfigParser()
-    cfg.read('./config.ini', encoding='utf-8')
-    paddleocr_url = cfg.get('PaddleOCR', 'paddleocr_url')
-    google_translate_url = cfg.get('GoogleTranslate', 'google_translate_url')
-    gtts_url = cfg.get('gTTS', 'gtts_url')
-    keyword_url = cfg.get('FastTextRank', 'keyword_url')
-    sentence_url = cfg.get('FastTextRank', 'sentence_url')
-    image_temp_dir = cfg.get('ImageTempDir', 'tmpDir')
+    cfg.read(config_path, encoding='utf-8')
+    section_list = cfg.sections()
     config_dict = {}
-    config_dict['paddleocr_url'] = paddleocr_url
-    config_dict['google_translate_url'] = google_translate_url
-    config_dict['gtts_url'] = gtts_url
-    config_dict['keyword_url'] = keyword_url
-    config_dict['sentence_url'] = sentence_url
-    config_dict['image_temp_dir'] = image_temp_dir
+    for section in section_list:
+        section_item = cfg.items(section)
+        for item in section_item:
+            config_dict[item[0]] = item[1]
     return config_dict
 
 
